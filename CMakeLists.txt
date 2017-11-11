@@ -1,6 +1,6 @@
 project(Path_Planning)
 
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 2.8)
 
 add_definitions(-std=c++11)
 
@@ -24,3 +24,16 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 add_executable(path_planning ${sources})
 
 target_link_libraries(path_planning z ssl uv uWS)
+
+if(${MYBUILD})
+    # custom configuration for my Ubuntu 14.04 system
+    add_definitions(-DCONFIG_UWS13_COMPAT)
+    add_definitions(-DCONFIG_MYBUILD)
+    target_link_libraries(path_planning ssl)
+
+    # unit test configuration
+	include_directories(src)
+
+	#	add_subdirectory(ext/googletest)
+	#add_subdirectory(test)
+endif()
