@@ -93,6 +93,7 @@ void PathPlanner::update(nlohmann::basic_json<>::value_type& j, std::vector<doub
 	double dt = 0.02;
 	double lane_idx = 1;
 	bool is_blocking=false;
+	double vblocker=1.e10;
 
 
 	for(int i=0; i<sensor_fusion.size(); ++i)
@@ -112,6 +113,9 @@ void PathPlanner::update(nlohmann::basic_json<>::value_type& j, std::vector<doub
 		if( isBlocking(car_s, car_d, s, d) )
 		{
 			is_blocking=true;
+
+			double v = sqrt(vx*vx+vy*vy);
+			if(v < vblocker) vblocker = v;
 		}
 	}
 	double target_d = LANE_WIDTH * (0.5 + lane_idx);
@@ -121,7 +125,22 @@ void PathPlanner::update(nlohmann::basic_json<>::value_type& j, std::vector<doub
 	double vlast = vref_;
 	if( is_blocking && vref_ > 0)
 	{
-		vref_ -= a*dt;
+		double vnext;
+		std::cout << "blocking: "<< vref_ << "," << vblocker << std::endl;
+		// accelerate/deccelerate to match velocity of
+		// blocking vehicle
+		if(vref_ > vblocker)
+		{
+			vnext = vref_ - a*dt;
+			if(vnext < vblocker) vnext=vblocker;
+		}
+		else
+		{
+			vnext = vref_ + a*dt;
+			if(vnext > vblocker) vnext=vblocker;
+		}
+		vref_ = vnext;
+		std::cout << "vref_: "<< vref_ << "," << vblocker << std::endl;
 	}
 	else if (vref_ < vmax)
 	{
