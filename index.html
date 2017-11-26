@@ -1,0 +1,12 @@
+---
+layout: default
+---
+
+<div class="home">
+		{% for file in site.pages %}
+		{% if file.name == 'README.md' %}
+		{{file.content}}
+		{% endif %}
+		{% endfor %}
+
+</div>
