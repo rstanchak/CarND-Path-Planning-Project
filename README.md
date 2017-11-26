@@ -30,16 +30,38 @@ The lane planner uses a simple state-machine containing two states as below:
 The transitions conditions are as follows:
 
 - KEEP_LANE => CHANGE_LANE: a lane change is safe and gets the vehicle to its destination faster
-- CHANGE_LANE => KEEP_LANE: the current lane matches the referencelane, i.e. the lane change is complete
+- CHANGE_LANE => KEEP_LANE: the current lane matches the reference lane, i.e. the lane change is complete
 
+#### calcBestLane algorithm
 To determine the optimal lane, the function *calcBestLane* in PathPlanner.cpp analyzes the sensor fusion data as follows:
 
-1. Discretize the road area around the vehicle's s position into a 5x3 grid in the s x d dimensions. Each d bin corresponds to a lane on the road, while each s-bins corresponds to 4 GM Hummer sized car lengths or about 20 meters. See below:
+_1. Discretize the road area in Frenet coordinates into a grid_
 
-2. For each vehicle in the sensor fusion data, compute the bounding box in Frenet coordinates
-3. For each bin in the grid, mark (a) the minimum vehicle velocity and (b) occupancy for any vehicle bounding box point in that bin.
-4. Compute the minimum velocity of each lane in front of the vehicle, store this in the variable *vlanes*
-5. Determine the 'best lane' as the lane with the maximum minimum velocity which is not occupied and which is adjacent to the current lane
+In the s x d dimensions. Each d bin corresponds to a lane on the road, while each s-bins corresponds to 4 GM Hummer-sized car lengths (about 20 meters);
+
+![Discretization Grid](grid1.png)
+
+For each vehicle in the sensor fusion data, compute the bounding box in Frenet coordinates
+
+_2. Compute the vehicle occupancy grid_
+
+occ(i,j) = sum of vehicle bounding points contained inside cell i,j
+
+![Occupancy Grid](grid2.png)
+
+_3. Compute the velocity grid_
+
+vocc(i,j) = minimum velocity of all vehicles with a point inside cell i,j
+
+![Velocity Grid](grid3.png) 
+
+_4. Compute the minimum lane velocity_
+
+For each grid cell in front of the vehicle, compute the minimum velocity by lane and store this in the variable *vlanes*
+
+_5. Determine the 'best lane'_
+
+The best lane is chosen as the one with the maximum minimum velocity which is not occupied and which is adjacent to the current lane
 
 ### Reference velocity computation
 
